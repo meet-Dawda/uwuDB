@@ -126,4 +126,35 @@ class Tree {
             } 
             return search(root->children.back(), key);
         }
+        void printTree(const std::shared_ptr<Node>& node, int level=0){
+            if (!node) return;
+            for (int i = 0; i < level; i++) {
+                std::cout << "  ";
+            }
+            for (size_t i = 0; i < node->keys.size(); i++) {
+                std::cout << node->keys[i] << " ";
+            }
+            std::cout << std::endl;
+            if (!node->isLeaf) {
+                for (const auto& child : node->children) {
+                    printTree(child, level + 1);
+                }
+            }
+        }
+        void display() {
+            printTree(root, 0);
+        }
 };
+
+int main() {
+    Tree tree(3); 
+    int values[] = {10, 20, 5, 15, 25, 30, 1};
+    for(int v : values) {
+        std::cout << "Inserting " << v << "..." << std::endl;
+        tree.insert(v);
+    }
+    
+    std::cout << "\nB+ Tree structure (Level Orderish):" << std::endl;
+    tree.display();
+    return 0;
+}
