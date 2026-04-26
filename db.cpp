@@ -9,6 +9,7 @@ using cell = std::variant<int, double, std::string>;
 
 struct Row {
     std::vector<cell> columns;
+    bool isActive = true; //tombstone
 };
 
 struct Node {
@@ -162,27 +163,57 @@ class Tree {
             std::shared_ptr<Node>leaf=search(root,key);
             for (size_t i=0; i<leaf->keys.size(); i++){
                 if (leaf->keys[i]==key){
+                    if (!leaf->data[i].isActive) {
+                        throw std::runtime_error("Key has been deleted!");
+                    }
                     return leaf->data[i];
                 }
             }
             throw std::runtime_error("Key not found!");
         }
+
+        bool updateRow(int key, Row data){
+            std::shared_ptr<Node> leaf = search(root, key);
+            for (size_t i=0; i<leaf->keys.size(); i++){
+                if (leaf->keys[i] == key){
+                    leaf->data[i] = data;
+                    return true;
+                }
+            }
+            return false;
+        }
+        bool remove(int key){
+            std::shared_ptr<Node> leaf = search(root, key);
+            for (size_t i=0; i<leaf->keys.size(); i++){
+                if (leaf->keys[i] == key){
+                    leaf->data[i].isActive = false; 
+                    return true;
+                }
+            }
+            return false;
+        }
+
 };
 int main() {
     Tree tree(5); 
     
-    Row r1;
-    r1.columns.push_back("Meet");
+    Row r1; r1.columns.push_back("Meet");
     tree.insert(10, r1);
-
-    Row r2;
-    r2.columns.push_back(99.5);
-    tree.insert(20, r2);
-
-    tree.display();
-
-    Row result = tree.dataSearch(20);
-    std::cout << "Data for key 20: " << std::get<double>(result.columns[0]) << std::endl;
+    
+    std::cout << "Original: " << std::get<std::string>(tree.dataSearch(10).columns[0]) << std::endl;
+    
+    Row r1_new; r1_new.columns.push_back("Meet Dawda");
+    tree.updateRow(10, r1_new);
+    std::cout << "Updated:  " << std::get<std::string>(tree.dataSearch(10).columns[0]) << std::endl;
+    
+    tree.remove(10);
+    std::cout << "Deleted key 10." << std::endl;
+    
+    try {
+        tree.dataSearch(10);
+    } catch (const std::exception& e) {
+        std::cout << "Search result: " << e.what() << std::endl; 
+    }
 
     return 0;
 }
