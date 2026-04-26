@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>C++ DB Auth</title>
+    <style>
+        body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
+        input, button { padding: 10px; margin: 5px 0; background: #222; color: #fff; border: 1px solid #444;}
+        button { cursor: pointer; background: #4CAF50; }
+        #output { margin-top: 20px; color: #0f0; }
+    </style>
+</head>
+<body>
+
+    <h2>Register</h2>
+    <input type="text" id="reg-user" placeholder="Username"><br>
+    <input type="password" id="reg-pass" placeholder="Password"><br>
+    <button onclick="register()">Register via C++ DB</button>
+
+    <h2>Login</h2>
+    <input type="number" id="log-id" placeholder="User ID (int)"><br>
+    <input type="text" id="log-user" placeholder="Username"><br>
+    <input type="password" id="log-pass" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+
+    <pre id="output"></pre>
+
+    <script>
+        const API_URL = "http://localhost:8000";
+
+        async function register() {
+            const user = document.getElementById('reg-user').value;
+            const pass = document.getElementById('reg-pass').value;
+            
+            const res = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+            const data = await res.json();
+            document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+        }
+
+        async function login() {
+            const id = document.getElementById('log-id').value;
+            const user = document.getElementById('log-user').value;
+            const pass = document.getElementById('log-pass').value;
+            
+            const res = await fetch(`${API_URL}/login?user_id=${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+            const data = await res.json();
+            document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
