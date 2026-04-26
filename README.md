@@ -40,5 +40,7 @@ c++ -O3 -Wall -shared -std=c++17 -fPIC $(python3 -m pybind11 --includes) binding
 
 \> Thinkng of adding SQL parsing for this 🤔 \
 \> LMK twinn  
+\> VENV AND OTHER FILES GOT UPLOADED (ACCIDENT) 😭
+
 Byeee! 
 UwUDB
