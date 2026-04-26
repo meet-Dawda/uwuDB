@@ -3,11 +3,20 @@
 #include<vector>
 #include <memory>
 #include <algorithm>
+#include<variant>
 
+using cell = std::variant<int, double, std::string>;
+
+struct Row {
+    std::vector<cell> columns;
+};
 
 struct Node {
     bool isLeaf;
     std::vector<int> keys;
+    std::vector<Row> data; //only for leaf node;
+
+
     std::vector<std::shared_ptr<Node>> children;  
     std::shared_ptr<Node>next_leaf;
     std::weak_ptr<Node> parent;
@@ -71,6 +80,7 @@ class Tree {
                 left->parent = newRoot;
                 right->parent = newRoot;
                 root = newRoot;
+                checkInvariant(root);
                 return;
             }
 
@@ -104,13 +114,17 @@ class Tree {
             node->keys.erase(node->keys.begin() + mid, node->keys.end());
             newNode->next_leaf = node->next_leaf;
             node->next_leaf = newNode;
+            newNode->data.assign(node->data.begin() + mid, node->data.end());
+            node->data.erase(node->data.begin() + mid, node->data.end());
             newNode->parent = node->parent;
             int promoteKey = newNode->keys.front();
             promoteToParent(node, promoteKey, newNode);
         }
-        void insert(int key){
+        void insert(int key, Row data){
             std::shared_ptr<Node> leaf=search(root, key);
             auto it = std::upper_bound(leaf->keys.begin(), leaf->keys.end(), key);
+            int index= it-leaf->keys.begin();
+            leaf->data.insert(leaf->data.begin() + index, data);
             leaf->keys.insert(it, key);
             if (leaf->keys.size() == order){
                 splitLeaf(leaf);
@@ -144,17 +158,31 @@ class Tree {
         void display() {
             printTree(root, 0);
         }
+        Row dataSearch(int key){
+            std::shared_ptr<Node>leaf=search(root,key);
+            for (size_t i=0; i<leaf->keys.size(); i++){
+                if (leaf->keys[i]==key){
+                    return leaf->data[i];
+                }
+            }
+            throw std::runtime_error("Key not found!");
+        }
 };
-
 int main() {
-    Tree tree(3); 
-    int values[] = {10, 20, 5, 15, 25, 30, 1};
-    for(int v : values) {
-        std::cout << "Inserting " << v << "..." << std::endl;
-        tree.insert(v);
-    }
+    Tree tree(5); 
     
-    std::cout << "\nB+ Tree structure (Level Orderish):" << std::endl;
+    Row r1;
+    r1.columns.push_back("Meet");
+    tree.insert(10, r1);
+
+    Row r2;
+    r2.columns.push_back(99.5);
+    tree.insert(20, r2);
+
     tree.display();
+
+    Row result = tree.dataSearch(20);
+    std::cout << "Data for key 20: " << std::get<double>(result.columns[0]) << std::endl;
+
     return 0;
 }
